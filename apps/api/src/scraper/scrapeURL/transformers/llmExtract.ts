@@ -1182,7 +1182,7 @@ export async function performSummary(
           required: ["summary"],
         };
         const selection = selectModelForSchema(inlineSchema);
-        return getModel(selection.modelName, "openai");
+        return getModel(selection.modelName, getDefaultProvider());
       })(),
       retryModel: getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider()),
       costTrackingOptions: {

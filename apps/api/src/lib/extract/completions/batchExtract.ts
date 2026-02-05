@@ -9,7 +9,8 @@ import {
   buildBatchExtractPrompt,
   buildBatchExtractSystemPrompt,
 } from "../build-prompts";
-import { getModel } from "../../generic-ai";
+import { getModel, getDefaultProvider } from "../../generic-ai";
+import { config } from "../../../config";
 import { CostTracking, CostLimitExceededError } from "../../cost-tracking";
 import fs from "fs/promises";
 import { extractData } from "../../../scraper/scrapeURL/lib/extractSmartScrape";
@@ -84,8 +85,8 @@ export async function batchExtractPromise(
     },
     markdown: buildDocument(doc),
     isExtractEndpoint: true,
-    model: getModel("gpt-4o-mini", "openai"),
-    retryModel: getModel("gpt-4.1", "openai"),
+    model: getModel(config.MODEL_NAME || "gpt-4o-mini", getDefaultProvider()),
+    retryModel: getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider()),
     costTrackingOptions: {
       costTracking: options.costTracking,
       metadata: {

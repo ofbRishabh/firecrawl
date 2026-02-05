@@ -7,7 +7,8 @@ import { rerankLinksWithLLM } from "./reranker";
 import { extractConfig } from "./config";
 import type { Logger } from "winston";
 import { generateText } from "ai";
-import { getModel } from "../generic-ai";
+import { getModel, getDefaultProvider } from "../generic-ai";
+import { config } from "../../config";
 import { calculateCost } from "../../scraper/scrapeURL/transformers/llmExtract";
 import type { CostTracking } from "../cost-tracking";
 
@@ -18,7 +19,7 @@ export async function generateBasicCompletion(
 ): Promise<{ text: string } | null> {
   try {
     const result = await generateText({
-      model: getModel("gpt-4.1", "openai"),
+      model: getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider()),
       prompt: prompt,
       providerOptions: {
         anthropic: {
@@ -69,7 +70,7 @@ export async function generateBasicCompletion(
     if (error?.type == "rate_limit_error") {
       try {
         const result = await generateText({
-          model: getModel("gpt-4o-mini", "openai"),
+          model: getModel(config.MODEL_NAME || "gpt-4o-mini", getDefaultProvider()),
           prompt: prompt,
           providerOptions: {
             anthropic: {

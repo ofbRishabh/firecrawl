@@ -7,7 +7,8 @@ import {
 } from "../transformers/llmExtract";
 import { smartScrape } from "./smartScrape";
 import { parseMarkdown } from "../../../lib/html-to-markdown";
-import { getModel } from "../../../lib/generic-ai";
+import { getModel, getDefaultProvider } from "../../../lib/generic-ai";
+import { config } from "../../../config";
 import { TokenUsage } from "../../../controllers/v1/types";
 import type { SmartScrapeResult } from "./smartScrape";
 import {
@@ -459,8 +460,8 @@ export async function extractData({
           const newExtractOptions = {
             ...extractOptions,
             markdown: markdown,
-            model: getModel("gpt-4o-mini", "openai"),
-            retryModel: getModel("gpt-4.1", "openai"),
+            model: getModel(config.MODEL_NAME || "gpt-4o-mini", getDefaultProvider()),
+            retryModel: getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider()),
             costTrackingOptions: {
               costTracking: extractOptions.costTrackingOptions.costTracking,
               metadata: {

@@ -9,7 +9,8 @@ import {
 } from "./generate-llmstxt-supabase";
 import { billTeam } from "../../services/billing/credit_billing";
 import { logLlmsTxt } from "../../services/logging/log_job";
-import { getModel } from "../generic-ai";
+import { getModel, getDefaultProvider } from "../generic-ai";
+import { config } from "../../config";
 import { generateCompletions } from "../../scraper/scrapeURL/transformers/llmExtract";
 import { CostTracking } from "../cost-tracking";
 import { getACUCTeam } from "../../controllers/auth";
@@ -184,7 +185,7 @@ export async function performGenerateLlmsTxt(
 
             const { extract } = await generateCompletions({
               logger,
-              model: getModel("gpt-4o-mini", "openai"),
+              model: getModel(config.MODEL_NAME || "gpt-4o-mini", getDefaultProvider()),
               options: {
                 systemPrompt: "",
                 schema: descriptionSchema,

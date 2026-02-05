@@ -8,7 +8,8 @@ import {
   buildAnalyzeSchemaPrompt,
   buildAnalyzeSchemaUserPrompt,
 } from "../build-prompts";
-import { getModel } from "../../../lib/generic-ai";
+import { getModel, getDefaultProvider } from "../../../lib/generic-ai";
+import { config } from "../../../config";
 import { Logger } from "winston";
 import { CostTracking } from "../../cost-tracking";
 export async function analyzeSchemaAndPrompt(
@@ -48,7 +49,7 @@ export async function analyzeSchemaAndPrompt(
 
   const schemaString = JSON.stringify(schema);
 
-  const model = getModel("gpt-4.1", "openai");
+  const model = getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider());
 
   const checkSchema = z
     .object({
