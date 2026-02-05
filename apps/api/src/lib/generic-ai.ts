@@ -6,7 +6,6 @@ import { groq } from "@ai-sdk/groq";
 import { google } from "@ai-sdk/google";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { fireworks } from "@ai-sdk/fireworks";
-import { createDeepInfra } from "@ai-sdk/deepinfra";
 import { createVertex } from "@ai-sdk/google-vertex";
 
 type Provider =
@@ -19,6 +18,14 @@ type Provider =
   | "fireworks"
   | "deepinfra"
   | "vertex";
+
+// For DeepInfra, use OpenAI-compatible API with chat endpoint
+const deepinfraOpenAI = createOpenAI({
+  apiKey: config.DEEPINFRA_API_KEY,
+  baseURL: "https://api.deepinfra.com/v1/openai",
+  name: "deepinfra",
+});
+
 const defaultProvider: Provider = config.OLLAMA_BASE_URL
   ? "ollama"
   : config.DEEPINFRA_API_KEY
@@ -29,11 +36,13 @@ export function getDefaultProvider(): Provider {
   return defaultProvider;
 }
 
+const openaiProvider = createOpenAI({
+  apiKey: config.OPENAI_API_KEY,
+  baseURL: config.OPENAI_BASE_URL,
+});
+
 const providerList: Record<Provider, any> = {
-  openai: createOpenAI({
-    apiKey: config.OPENAI_API_KEY,
-    baseURL: config.OPENAI_BASE_URL,
-  }), //OPENAI_API_KEY
+  openai: openaiProvider,
   ollama: createOllama({
     baseURL: config.OLLAMA_BASE_URL,
   }),
@@ -44,9 +53,7 @@ const providerList: Record<Provider, any> = {
     apiKey: config.OPENROUTER_API_KEY,
   }),
   fireworks, //FIREWORKS_API_KEY
-  deepinfra: createDeepInfra({
-    apiKey: config.DEEPINFRA_API_KEY,
-  }),
+  deepinfra: deepinfraOpenAI,
   vertex: createVertex({
     project: "firecrawl",
     //https://github.com/vercel/ai/issues/6644 bug
@@ -63,13 +70,23 @@ const providerList: Record<Provider, any> = {
   }),
 };
 
+// Providers that need .chat() to use Chat Completions API instead of Responses API
+const chatProviders = new Set(["openai", "deepinfra"]);
+
 export function getModel(name: string, provider: Provider = defaultProvider) {
   if (name === "gemini-2.5-pro") {
     name = "gemini-2.5-pro";
   }
-  return config.MODEL_NAME
-    ? providerList[provider](config.MODEL_NAME)
-    : providerList[provider](name);
+
+  const modelName = config.MODEL_NAME || name;
+  const providerInstance = providerList[provider];
+
+  // Use .chat() for OpenAI-compatible providers to force Chat Completions API
+  if (chatProviders.has(provider) && providerInstance.chat) {
+    return providerInstance.chat(modelName);
+  }
+
+  return providerInstance(modelName);
 }
 
 export function getEmbeddingModel(
