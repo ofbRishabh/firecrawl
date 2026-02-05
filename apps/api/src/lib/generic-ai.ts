@@ -6,7 +6,7 @@ import { groq } from "@ai-sdk/groq";
 import { google } from "@ai-sdk/google";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { fireworks } from "@ai-sdk/fireworks";
-import { deepinfra } from "@ai-sdk/deepinfra";
+import { createDeepInfra } from "@ai-sdk/deepinfra";
 import { createVertex } from "@ai-sdk/google-vertex";
 
 type Provider =
@@ -19,7 +19,11 @@ type Provider =
   | "fireworks"
   | "deepinfra"
   | "vertex";
-const defaultProvider: Provider = config.OLLAMA_BASE_URL ? "ollama" : "openai";
+const defaultProvider: Provider = config.OLLAMA_BASE_URL
+  ? "ollama"
+  : config.DEEPINFRA_API_KEY
+    ? "deepinfra"
+    : "openai";
 
 const providerList: Record<Provider, any> = {
   openai: createOpenAI({
@@ -36,7 +40,9 @@ const providerList: Record<Provider, any> = {
     apiKey: config.OPENROUTER_API_KEY,
   }),
   fireworks, //FIREWORKS_API_KEY
-  deepinfra, //DEEPINFRA_API_KEY
+  deepinfra: createDeepInfra({
+    apiKey: config.DEEPINFRA_API_KEY,
+  }),
   vertex: createVertex({
     project: "firecrawl",
     //https://github.com/vercel/ai/issues/6644 bug

@@ -58,6 +58,11 @@ USE_DB_AUTHENTICATION=false
 # MODEL_NAME=deepseek-r1:7b
 # MODEL_EMBEDDING_NAME=nomic-embed-text
 
+# Experimental: Use DeepInfra
+# DEEPINFRA_API_KEY=your_deepinfra_api_key
+# MODEL_NAME=meta-llama/Meta-Llama-3.1-70B-Instruct
+# MODEL_EMBEDDING_NAME=BAAI/bge-large-en-v1.5
+
 # Experimental: Use any OpenAI-compatible API
 # OPENAI_BASE_URL=https://example.com/v1
 # OPENAI_API_KEY=
