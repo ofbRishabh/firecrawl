@@ -73,9 +73,10 @@ services:
     networks:
       - backend
     # Resource limits for Docker Compose (not Swarm)
+    # Production: 2 cores, 8GB RAM for browser operations
     cpus: 2.0
-    mem_limit: 4G
-    memswap_limit: 4G
+    mem_limit: 8G
+    memswap_limit: 8G
     logging:
       driver: "json-file"
       options:
@@ -106,10 +107,10 @@ services:
       - "${PORT:-3002}:${INTERNAL_PORT:-3002}"
     command: node dist/src/harness.js --start-docker
     # Resource limits for Docker Compose (not Swarm)
-    # Increase if you have more CPU cores/RAM available
+    # Production: 4 cores, 16GB RAM for API and workers
     cpus: 4.0
-    mem_limit: 8G
-    memswap_limit: 8G
+    mem_limit: 16G
+    memswap_limit: 16G
 
   redis:
     # NOTE: If you want to use Valkey (open source) instead of Redis (source available),
