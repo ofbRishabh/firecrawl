@@ -17,7 +17,7 @@ import {
   NoObjectGeneratedError,
   jsonSchema,
 } from "ai";
-import { getModel } from "../../../lib/generic-ai";
+import { getModel, getDefaultProvider } from "../../../lib/generic-ai";
 import { z } from "zod";
 import fs from "fs/promises";
 import Ajv from "ajv";
@@ -25,6 +25,8 @@ import { extractData } from "../lib/extractSmartScrape";
 import { CostTracking } from "../../../lib/cost-tracking";
 import { isAgentExtractModelValid } from "../../../controllers/v1/types";
 import { hasFormatOfType } from "../../../lib/format-utils";
+
+import { config } from "../../../config";
 
 // Smart model selection based on schema
 function detectRecursiveSchema(schema: any): boolean {
@@ -44,6 +46,12 @@ function selectModelForSchema(schema?: any): {
   modelName: string;
   reason: string;
 } {
+  // Use configured MODEL_NAME if available (for self-hosted with DeepInfra/Ollama)
+  if (config.MODEL_NAME) {
+    logger.info(`Model: ${config.MODEL_NAME} | configured`);
+    return { modelName: config.MODEL_NAME, reason: "configured_model" };
+  }
+
   if (!schema) {
     return { modelName: "gpt-4o-mini", reason: "no_schema" };
   }
@@ -300,10 +308,10 @@ export async function generateCompletions({
   markdown,
   previousWarning,
   isExtractEndpoint,
-  model = getModel("gpt-4o-mini", "openai"),
+  model = getModel(config.MODEL_NAME || "gpt-4o-mini", getDefaultProvider()),
   mode = "object",
   providerOptions,
-  retryModel = getModel("gpt-4.1", "openai"),
+  retryModel = getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider()),
   costTrackingOptions,
   metadata,
 }: GenerateCompletionsOptions): Promise<{
@@ -975,8 +983,8 @@ export async function performLLMExtract(
       options: jsonFormat,
       markdown: document.markdown,
       previousWarning: document.warning,
-      model: getModel(modelSelection.modelName, "openai"),
-      retryModel: getModel("gpt-4.1", "openai"),
+      model: getModel(modelSelection.modelName, getDefaultProvider()),
+      retryModel: getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider()),
       costTrackingOptions: {
         costTracking: meta.costTracking,
         metadata: {
@@ -1176,7 +1184,7 @@ export async function performSummary(
         const selection = selectModelForSchema(inlineSchema);
         return getModel(selection.modelName, "openai");
       })(),
-      retryModel: getModel("gpt-4.1", "openai"),
+      retryModel: getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider()),
       costTrackingOptions: {
         costTracking: meta.costTracking,
         metadata: {
@@ -1274,8 +1282,8 @@ export async function generateSchemaFromPrompt(
     scrapeId?: string;
   },
 ): Promise<{ extract: any }> {
-  const model = getModel("gpt-4o-mini", "openai");
-  const retryModel = getModel("gpt-4.1", "openai");
+  const model = getModel(config.MODEL_NAME || "gpt-4o-mini", getDefaultProvider());
+  const retryModel = getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider());
   const temperatures = [0, 0.1, 0.3]; // Different temperatures to try
   let lastError: Error | null = null;
 
@@ -1352,8 +1360,8 @@ export async function generateCrawlerOptionsFromPrompt(
   costTracking: CostTracking,
   metadata: { teamId: string; crawlId?: string },
 ): Promise<{ extract: any }> {
-  const model = getModel("gpt-4o-mini", "openai");
-  const retryModel = getModel("gpt-4.1", "openai");
+  const model = getModel(config.MODEL_NAME || "gpt-4o-mini", getDefaultProvider());
+  const retryModel = getModel(config.MODEL_NAME || "gpt-4.1", getDefaultProvider());
   const temperatures = [0, 0.1, 0.3];
   let lastError: Error | null = null;
 

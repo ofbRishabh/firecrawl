@@ -25,6 +25,10 @@ const defaultProvider: Provider = config.OLLAMA_BASE_URL
     ? "deepinfra"
     : "openai";
 
+export function getDefaultProvider(): Provider {
+  return defaultProvider;
+}
+
 const providerList: Record<Provider, any> = {
   openai: createOpenAI({
     apiKey: config.OPENAI_API_KEY,
